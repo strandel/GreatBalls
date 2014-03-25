@@ -1,0 +1,30 @@
+{
+  "name": "GreatBalls",
+  "version": "0.0.1",
+  "description": "Balls of Moves App",
+  "main": "server/index.js",
+  "dependencies": {
+    "moves": "~0.0.2",
+    "logfmt": "^1.1.1",
+    "express": "^3.5.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/strandel/GreatBalls.git"
+  },
+  "keywords": [
+    "Moves",
+    "App",
+    "Balls"
+  ],
+  "author": "Toni Strandell",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/strandel/GreatBalls/issues"
+  },
+  "homepage": "https://github.com/strandel/GreatBalls"
+}
