@@ -20,7 +20,7 @@ app.get('/', function (req, res) {
 });
 
 app.get('/ShowBalls', function (req, res) {
-  moves.token(req.query.code, function(error, response, body) {
+  moves.token(req.query.code, function (error, response, body) {
     if (error) {
       console.error(error)
       return 
@@ -31,6 +31,7 @@ app.get('/ShowBalls', function (req, res) {
     console.log('access token: ' + access_token)
     console.log('refresh token: ' + refresh_token)
     console.log('expires in: ' + expires_in)
+    res.send(access_token)
   })
 })
 
