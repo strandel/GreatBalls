@@ -12,15 +12,15 @@ var moves = new Moves({
   , redirect_uri: 'http://great-balls.herokuapp.com/ShowBalls'
 })
 
-app.get('/', function(req, res) {
+app.get('/', function (req, res) {
   moves.authorize({
       scope: ['activity', 'location'] //can contain either activity, location or both
     , state: 'GreatBalls' //optional state as per oauth
   }, res)
 });
 
-app.get('ShowBalls', function (req, res) {
-  moves.token('code returned from authorize step above', function(error, response, body) {
+app.get('/ShowBalls', function (req, res) {
+  moves.token(req.query.code, function(error, response, body) {
     if (error) {
       console.error(error)
       return 
