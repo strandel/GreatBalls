@@ -7,7 +7,8 @@ app.use(logfmt.requestLogger());
 
 
 var moves = new Moves({
-    client_id: 'w26SoC75O014NGR_uNMm666I9b5tR8W5'
+    api_base: 'https://api.moves-app.com/api/1.1'
+  , client_id: 'w26SoC75O014NGR_uNMm666I9b5tR8W5'
   , client_secret: 'OH0IWmwA_2Pfei2XY0Yrd664GFq47fk_vNlP5LVUGZ9_FDa21wW75SvOB756pG1Y'
   , redirect_uri: 'http://great-balls.herokuapp.com/ShowBalls'
 })
@@ -21,16 +22,14 @@ app.get('/', function (req, res) {
 
 app.get('/ShowBalls', function (req, res) {
   moves.token(req.query.code, function (error, response, body) {
+    var tokenJson = JSON.parse(body)
     if (error) {
       console.error(error)
       return 
     }
-    var access_token = body.access_token
-      , refresh_token = body.refresh_token
-      , expires_in = body.expires_in
-    console.log('access token: ' + access_token)
-    console.log('refresh token: ' + refresh_token)
-    console.log('expires in: ' + expires_in)
+    var access_token = tokenJson.access_token
+      , refresh_token = tokenJson.refresh_token
+      , expires_in = tokenJson.expires_in
     res.send(access_token)
   })
 })
