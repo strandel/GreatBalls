@@ -2,7 +2,10 @@
   "name": "GreatBalls",
   "version": "0.0.1",
   "description": "Balls of Moves App",
-  "main": "server/index.js",
+  "main": "server/main.js",
+  "engines": {
+    "node": "0.11.x"
+  },
   "dependencies": {
     "moves": "~0.0.2",
     "logfmt": "^1.1.1",
@@ -10,7 +13,8 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node --harmony server/main.js"
   },
   "repository": {
     "type": "git",
