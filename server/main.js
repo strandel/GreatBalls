@@ -3,6 +3,8 @@ var logfmt = require("logfmt")
 var Moves = require('moves')
 var app = express()
 
+var MOVES_ACCESS_TOKEN_COOKIE = 'mO4cc7Ok3n'
+
 app.use(logfmt.requestLogger());
 
 
@@ -14,6 +16,8 @@ var moves = new Moves({
 })
 
 app.get('/', function (req, res) {
+  if (req.signedCookies[MOVES_ACCESS_TOKEN_COOKIE]) {
+
   moves.authorize({
       scope: ['activity', 'location'] //can contain either activity, location or both
     , state: 'GreatBalls' //optional state as per oauth
@@ -21,18 +25,39 @@ app.get('/', function (req, res) {
 });
 
 app.get('/ShowBalls', function (req, res) {
-  moves.token(req.query.code, function (error, response, body) {
-    var tokenJson = JSON.parse(body)
-    if (error) {
-      console.error(error)
-      return 
-    }
-    var access_token = tokenJson.access_token
-      , refresh_token = tokenJson.refresh_token
-      , expires_in = tokenJson.expires_in
-    res.send(access_token)
-  })
+  } else {
+    var authCode = req.query.code
+    if (!authCode) {res.redirect_uri('/')}
+    accessToken(req.query.code, function (token) {
+      res.cookie(MOVES_ACCESS_TOKEN_COOKIE, token.access_token, {domain: 'great-balls.herokuapp.com', signed: true, http_only: false})
+      myMoves.month(token.access_token, function (activity) {
+        res.send(activity)
+      })
+    })
+  }
 })
+
+var myMoves = {
+  accessToken: function (authCode, callback) {
+    moves.token(authCode, function (error, response, body) {
+      if (error) {
+        console.error(error)
+        return 
+      }
+      callback(JSON.parse(body))
+    })
+  }
+, month: function (accessToken, callback) {
+    var now = new Date(), year = now.getFullYear(), month = now.getMonth() + 1
+    moves.get('/user/summary/daily/' + year + month, accessToken, function (error, response, body) {
+      if (error) {
+        console.error(error)
+        return 
+      }
+      callback(JSON.parse(body))
+    })
+  }
+}
 
 var port = Number(process.env.PORT || 5000);
 app.listen(port, function() {
