@@ -7,34 +7,46 @@ var MOVES_ACCESS_TOKEN_COOKIE = 'mO4cc7Ok3n'
 
 app.use(logfmt.requestLogger())
 app.use(express.bodyParser())
+app.use(express.static(__dirname + '/../www'))
 
 
 var moves = new Moves({
     api_base: 'https://api.moves-app.com/api/1.1'
   , client_id: 'w26SoC75O014NGR_uNMm666I9b5tR8W5'
   , client_secret: 'OH0IWmwA_2Pfei2XY0Yrd664GFq47fk_vNlP5LVUGZ9_FDa21wW75SvOB756pG1Y'
-  , redirect_uri: 'http://great-balls.herokuapp.com'
+  , redirect_uri: 'http://great-balls.herokuapp.com/api/receiveToken'
 })
 
 var dev = {
     toni_access_token: '8UtD8pCntnG60KlwvbohV17on4z0izUpt9bhbbPA0z58lX2SJ0kRYoYYQBYq21tl'
 }
 
-app.get('/', function (req, res) {
+app.get('/api/month/current', function (req, res) {
   var accessToken = getAccessTokenFromCookie(req)
-  var authToken = req.query.code
   if (accessToken) {
     myMoves.month(accessToken, function (activity) { 
       res.send(activity)
     })
   }
-  else if (authToken) {
-    myMoves.getAccessToken(authToken, function (token) {
+})
+
+app.get('/api/authorize', function (req, res) {
+  myMoves.askAuthorizationFromUser(res)
+})
+
+app.get('/api/receiveToken', function (req, res) {
+  var authToken = req.query.code
+  if (authToken) {
+    myMoves.getAccessToken(authToken, function (error, token) {
+      if (error) { console.error(error); return res.send(error) }
+      console.log('### ' + token.access_token)
+      console.log('### ' + token.refresh_token)
+      console.log('### ' + token.expires_in)
       res.cookie(MOVES_ACCESS_TOKEN_COOKIE, token.access_token)
       res.redirect('/')
     })
   }
-  else { myMoves.askAuthorizationFromUser(res) }
+  else { return res.status(400).json({msg: '"code" url parameter missing'}) }
 })
 
 function getAccessTokenFromCookie(req) {
@@ -51,8 +63,7 @@ var myMoves = {
   }  
 , getAccessToken: function (authCode, callback) {
     moves.token(authCode, function (error, response, body) {
-      if (error) { return console.error(error) }
-      callback(JSON.parse(body))
+      callback(error, JSON.parse(body))
     })
   }
 , month: function (accessToken, callback) {
