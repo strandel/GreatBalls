@@ -75,11 +75,11 @@ var myMoves = {
   }
 }
 
+console.log('\n**********************')
+console.log('Great Balls on fire!!!\n')
+
 var port = Number(process.env.PORT || 5000)
 app.listen(port, function() {
   console.log('Listening on port ' + port)
   console.log('**********************\n')
 })
-
-console.log('\n**********************')
-console.log('Great Balls on fire!!!\n')
