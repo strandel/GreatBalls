@@ -20,15 +20,5 @@
     "type": "git",
     "url": "https://github.com/strandel/GreatBalls.git"
   },
-  "keywords": [
-    "Moves",
-    "App",
-    "Balls"
-  ],
-  "author": "Toni Strandell",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/strandel/GreatBalls/issues"
-  },
   "homepage": "https://github.com/strandel/GreatBalls"
 }
