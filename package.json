@@ -9,7 +9,9 @@
   "dependencies": {
     "moves": "~0.0.2",
     "logfmt": "^1.1.1",
-    "express": "^3.5.1"
+    "express": "~3.5.1",
+    "mongojs": "^0.15.1",
+    "bluebird": "~2.3.10"
   },
   "devDependencies": {},
   "scripts": {
