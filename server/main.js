@@ -15,17 +15,9 @@ var _moves = new Moves({
   , client_secret: 'OH0IWmwA_2Pfei2XY0Yrd664GFq47fk_vNlP5LVUGZ9_FDa21wW75SvOB756pG1Y'
   , redirect_uri: 'https://great-balls.herokuapp.com/api/receiveToken'
 })
-
-var config = {
-  mongo_uri: process.env.MONGODB_URL || 'mongodb://ballmover:jDk3-rP2m9.aCv4-kRE39@dogen.mongohq.com:10039/GreatBalls',
-  mongo_collections: ['users']
-}
-var _db = require('mongojs').connect(config.mongo_uri, config.mongo_collections)
-
-var db = {
-  users: Promise.promisifyAll(_db.users, { suffix: 'P' })
-}
 var moves = Promise.promisifyAll(_moves, {suffix: 'P' })
+
+var db = require('./db.js')
 
 app.get('/api/cycling/:username/:year/:month', function (req, res) {
   var username = req.params.username
