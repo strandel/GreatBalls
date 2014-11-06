@@ -1,6 +1,7 @@
-var express = require("express")
-var logfmt = require("logfmt")
+var express = require('express')
+var logfmt = require('logfmt')
 var Moves = require('moves')
+var Promise = require('bluebird')
 
 var app = express()
 
@@ -8,7 +9,7 @@ app.use(logfmt.requestLogger())
 app.use(express.bodyParser())
 app.use(express.static(__dirname + '/../www'))
 
-var moves = new Moves({
+var _moves = new Moves({
     api_base: 'https://api.moves-app.com/api/1.1'
   , client_id: 'w26SoC75O014NGR_uNMm666I9b5tR8W5'
   , client_secret: 'OH0IWmwA_2Pfei2XY0Yrd664GFq47fk_vNlP5LVUGZ9_FDa21wW75SvOB756pG1Y'
@@ -19,22 +20,41 @@ var config = {
   mongo_uri: process.env.MONGODB_URL || 'mongodb://ballmover:jDk3-rP2m9.aCv4-kRE39@dogen.mongohq.com:10039/GreatBalls',
   mongo_collections: ['users']
 }
-var db = require("mongojs").connect(config.mongo_uri, config.mongo_collections)
+var _db = require('mongojs').connect(config.mongo_uri, config.mongo_collections)
+
+var db = {
+  users: Promise.promisifyAll(_db.users, { suffix: 'P' })
+}
+var moves = Promise.promisifyAll(_moves, {suffix: 'P' })
 
 app.get('/api/cycling/:username/:year/:month', function (req, res) {
   var username = req.params.username
-  var year = req.params.year
-  var month = req.params.month
-  db.users.findOne({ 'username': username }, function (err, user) {
-    if (err) { return res.status(500).json({ msg: err }) }
-    else if (!user) { return res.status(404).json({ msg: 'no such user: ' + username }) }
+  var url = '/user/summary/daily/' + req.params.year + req.params.month
+  console.log(' getting from moves >> [' + username + '] ' + url)
 
-    moves.get('/user/summary/daily/' + year + month, user.access_token, movesResponseHandler(function (error, monthJson) {
-      if (error) { return res.status(500).json({ msg: error }) }
-      res.json(monthJson)
-    }))
-  })
+  getAccessTokenAsync(username)
+    .then(function (movesToken) { return moves.getP(url, movesToken) })
+    .spread(function (connectionObj, response) { return JSON.parse(response) })
+    .then(function (monthJson) { res.json(monthJson) })
+    .catch(HttpError404, logAndSendError(res, 404))
+    .catch(logAndSendError(res, 500))
 })
+
+function getAccessTokenAsync(username) {
+  return db.users.findOneP({ 'username': username }).then(function (user) {
+    if (!user) { throw new HttpError404('no such user: ' + username) }
+    return user.access_token
+  })
+}
+function logAndSendError(res, statusCode) {
+  return function (err) {
+    console.error(err)
+    res.status(statusCode).json({ msg: err.message })
+  }
+}
+
+function HttpError404(msg) { this.name = 'HttpError404'; this.message = msg || 'requested resource not found' }
+HttpError404.prototype = Object.create(Error.prototype)
 
 app.get('/api/authorize/:username', function (req, res) {
   var username = req.params.username
@@ -57,10 +77,9 @@ app.get('/api/receiveToken', function (req, res) {
       }
       console.log(' >> Adding new user: ' + JSON.stringify(newUser))
 
-      db.users.save(newUser, function(err, saved) {
-        if( err || !saved ) { console.error('ERROR saving user: ' + err); res.status(500).json({ msg: err }) }
-        console.log(" >> User saved to mongo\n")
-        // TODO: redirect to page with username , e.g. res.redirect('/' + username)
+      db.users.save(newUser, function(err, savedUser) {
+        if( err || !savedUser ) { console.error('ERROR saving user: ' + err); res.status(500).json({ msg: err }) }
+        console.log(' >> User saved to mongo with id: ' + savedUser._id)
         res.redirect('/api/cycling/' + username + '/2014/03')
       })
     })
