@@ -97,21 +97,18 @@ var myMoves = {
 , getAccessToken: function (authCode, callback) {
     moves.token(authCode, movesResponseHandler(callback))
   }
-, month: function (accessToken, callback) {
-    var now = new Date(), year = now.getFullYear(), month = now.getMonth() + 1
-    moves.get('/user/summary/daily/' + year + month, accessToken, movesResponseHandler(callback))
-  }
 }
 
 function movesResponseHandler(callback) { 
   return function (error, response, body) { callback(error, JSON.parse(body)) }
 }
 
-console.log('\n**********************')
-console.log('Great Balls on fire!!!\n')
-
 var port = Number(process.env.PORT || 5000)
 app.listen(port, function() {
-  console.log('Listening on port ' + port)
-  console.log('**********************\n')
+  console.log(
+    '\n***********************' +
+    '\nGreat Balls on fire!!!!\n' +
+    '\nListening on port ' + port +
+    '\n***********************\n'
+  )
 })
