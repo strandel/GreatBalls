@@ -1,7 +1,9 @@
 var express = require('express')
 var logfmt = require('logfmt')
-var Moves = require('moves')
 var Promise = require('bluebird')
+
+var moves = require('./moves.js')
+var db = require('./db.js')
 
 var app = express()
 
@@ -9,15 +11,6 @@ app.use(logfmt.requestLogger())
 app.use(express.bodyParser())
 app.use(express.static(__dirname + '/../www'))
 
-var _moves = new Moves({
-    api_base: 'https://api.moves-app.com/api/1.1'
-  , client_id: 'w26SoC75O014NGR_uNMm666I9b5tR8W5'
-  , client_secret: 'OH0IWmwA_2Pfei2XY0Yrd664GFq47fk_vNlP5LVUGZ9_FDa21wW75SvOB756pG1Y'
-  , redirect_uri: 'https://great-balls.herokuapp.com/api/receiveToken'
-})
-var moves = Promise.promisifyAll(_moves, {suffix: 'P' })
-
-var db = require('./db.js')
 
 app.get('/api/cycling/:username/:year/:month', function (req, res) {
   var username = req.params.username
