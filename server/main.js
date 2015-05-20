@@ -45,15 +45,19 @@ app.get('/api/authorize/:username', function (req, res) {
   var username = req.params.username
   if (!username) { return res.status(400).json({ msg: 'correct url is "/api/authorize/:username"' })}
   // TODO: check username does not yet exist in db
-  myMoves.askAuthorizationFromUser(res, username)
+  moves.authorize({
+    scope: ['activity', 'location'] //can contain either activity, location or both
+  , state: username
+  }, res)
 })
 
 app.get('/api/receiveToken', function (req, res) {
   var authToken = req.query.code
   var username = req.query.state
   if (authToken) {
-    myMoves.getAccessToken(authToken, function (error, token) {
+    moves.token(authCode, function (error, connectionObj, response) {
       if (error) { console.error(error); return res.status(500).json({ msg: error }) }
+      var token = JSON.parse(response)
       var newUser = {
         username: username
       , access_token: token.access_token
@@ -71,22 +75,6 @@ app.get('/api/receiveToken', function (req, res) {
   }
   else { return res.status(400).json({ msg: '"code" url parameter missing' })}
 })
-
-var myMoves = {
-  askAuthorizationFromUser: function (res, username) {
-    moves.authorize({
-      scope: ['activity', 'location'] //can contain either activity, location or both
-    , state: username
-    }, res)
-  }  
-, getAccessToken: function (authCode, callback) {
-    moves.token(authCode, movesResponseHandler(callback))
-  }
-}
-
-function movesResponseHandler(callback) { 
-  return function (error, response, body) { callback(error, JSON.parse(body)) }
-}
 
 var port = Number(process.env.PORT || 5000)
 app.listen(port, function() {
