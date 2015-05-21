@@ -20,11 +20,18 @@ app.get('/api/cycling/:username/:year/:month', function (req, res) {
   getAccessTokenAsync(username)
     .then(function (movesToken) { return moves.getP(url, movesToken) })
     .spread(function (connectionObj, response) { return JSON.parse(response) })
+    .map(function (dayJson) { return {"date": dayJson.date, "cycledMeters": cyclingMeters(dayJson.summary)} })
     .then(function (monthJson) { res.json(monthJson) })
     .catch(HttpError404, logAndSendError(res, 404))
     .catch(logAndSendError(res, 500))
 })
 
+function cyclingMeters(activityArr) {
+  return activityArr
+            .filter(function (activity) { return activity.activity === 'cycling' })
+            .map(function (cycling) {return cycling.distance })
+            [0]
+}
 function getAccessTokenAsync(username) {
   return db.users.findOneP({ 'username': username }).then(function (user) {
     if (!user) { throw new HttpError404('no such user: ' + username) }
